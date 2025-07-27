@@ -57,12 +57,10 @@ const TentangKami = () => {
                 Karisma Gazebo Rakyat
               </h2>
               <p className="text-wood-600 mb-6">
-                Karisma Gazebo Rakyat telah berpengalaman lebih dari 10 tahun dalam pembuatan berbagai jenis gazebo berkualitas tinggi. 
-                Kami berkomitmen untuk memberikan produk terbaik dengan bahan pilihan dan pengerjaan yang teliti.
+              Sudah 20 tahun sejak pertama kali kami membangun sebuah gazebo untuk client kami di daerah jakarta, sejak itu pula kami berkomitmen untuk terus meningkatkan kualitas kami baik dari segi jasa maupun kualitas produk kami.
               </p>
               <p className="text-wood-600 mb-8">
-                Dengan tim ahli yang berpengalaman, kami siap mewujudkan impian Anda memiliki gazebo idaman yang tidak hanya indah 
-                tetapi juga kokoh dan tahan lama.
+              Kini kami telah berdiri dengan banyak hal yang tentunya lebih baik dari hari sebelumnya, kami telah di percaya untuk mengerjakan puluhan proyek di seluruh wilayah di indonesia.
               </p>
               
               <div className="grid grid-cols-2 gap-4">

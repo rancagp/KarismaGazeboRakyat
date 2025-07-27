@@ -39,18 +39,19 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link 
-              href="/" 
-              className="text-2xl font-bold text-amber-100 hover:text-white transition-colors"
-            >
-              Karisma Gazebo
+          <div className="flex-shrink-0 flex items-center ml-4 md:ml-6">
+            <Link href="/" className="block h-12 w-auto">
+              <img 
+                className="h-full w-auto" 
+                src="/images/logo-KGR2.png" 
+                alt="Karisma Gazebo Rakyat"
+              />
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-8">
+          <div className="hidden md:block mr-2 md:mr-2">
+            <div className="ml-10 flex items-baseline space-x-4">
               {navLinks.map((item) => (
                 <Link
                   key={item.name}

@@ -96,7 +96,7 @@ const ProductsPage = () => {
   return (
     <div className="min-h-screen bg-wood-50">
       {/* Hero Section */}
-      <section className="relative h-64 bg-wood-800 flex items-center justify-center">
+      <section className="relative h-96 bg-wood-800 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/50 z-0"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Produk Kami</h1>
