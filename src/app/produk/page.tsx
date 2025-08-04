@@ -1,98 +1,156 @@
 import { Metadata } from 'next';
-import { FaSearch, FaFilter, FaShoppingCart, FaHeart, FaStar } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaStar, FaHeart, FaShoppingCart } from 'react-icons/fa';
 import Link from 'next/link';
+import ProductImage from '@/components/ProductImage';
+
+// Tipe data untuk produk
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  image: string;
+  category: string;
+  rating: number;
+  reviewCount: number;
+  specs?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 // Metadata untuk SEO
-const metadata: Metadata = {
+export const metadata: Metadata = {
   title: 'Produk - Karisma Gazebo Rakyat',
   description: 'Temukan berbagai pilihan gazebo berkualitas tinggi dengan desain yang elegan dan fungsional.',
 };
 
-// Data produk dummy
-const products = [
-  {
-    id: 1,
-    name: 'Gazebo Minimalis',
-    category: 'Minimalis',
-    price: 15000000,
-    rating: 4.8,
-    reviewCount: 24,
-    image: '/images/products/gazebo-minimalis.jpg',
-    description: 'Gazebo dengan desain minimalis yang cocok untuk halaman rumah Anda, memberikan kesan lapang dan modern.',
-    features: ['Kayu Jati Tahan Lama', 'Atap Tahan Air', 'Desain Modern'],
-    sizes: ['3x3', '4x4', '5x5'],
-    colors: ['#8B5A2B', '#5D4037', '#3E2723']
-  },
-  {
-    id: 2,
-    name: 'Gazebo Klasik',
-    category: 'Klasik',
-    price: 25000000,
-    rating: 4.9,
-    reviewCount: 18,
-    image: '/images/products/gazebo-klasik.jpg',
-    description: 'Gazebo dengan sentuhan klasik yang elegan dan mewah, cocok untuk taman bergaya tradisional.',
-    features: ['Kayu Ulin Kokoh', 'Ukiran Klasik', 'Finishing Halus'],
-    sizes: ['3x3', '4x4', '5x5', '6x6'],
-    colors: ['#5D4037', '#3E2723', '#1B5E20']
-  },
-  {
-    id: 3,
-    name: 'Gazebo Modern',
-    category: 'Modern',
-    price: 20000000,
-    rating: 4.7,
-    reviewCount: 32,
-    image: '/images/products/gazebo-modern.jpg',
-    description: 'Gazebo dengan desain modern dan fungsional untuk ruang luar Anda, minimalis namun elegan.',
-    features: ['Desain Kekinian', 'Material Berkualitas', 'Perawatan Mudah'],
-    sizes: ['3x3', '4x4', '5x5'],
-    colors: ['#3E2723', '#1B5E20', '#0D47A1']
-  },
-  {
-    id: 4,
-    name: 'Gazebo Taman',
-    category: 'Taman',
-    price: 18000000,
-    rating: 4.6,
-    reviewCount: 15,
-    image: '/images/products/gazebo-taman.jpg',
-    description: 'Gazebo yang dirancang khusus untuk taman dengan konsep alami yang menyatu dengan lingkungan.',
-    features: ['Desain Alami', 'Tahan Cuaca', 'Perawatan Mudah'],
-    sizes: ['3x3', '4x4', '5x5'],
-    colors: ['#1B5E20', '#33691E', '#8B5A2B']
-  },
-  {
-    id: 5,
-    name: 'Gazebo Mewah',
-    category: 'Mewah',
-    price: 35000000,
-    rating: 5.0,
-    reviewCount: 12,
-    image: '/images/products/gazebo-mewah.jpg',
-    description: 'Gazebo mewah dengan sentuhan eksklusif untuk memberikan kesan mewah pada properti Anda.',
-    features: ['Material Eksklusif', 'Desain Eksklusif', 'Garansi Premium'],
-    sizes: ['4x4', '5x5', '6x6', 'Custom'],
-    colors: ['#3E2723', '#1A237E', '#4A148C']
-  },
-  {
-    id: 6,
-    name: 'Gazebo Minimalis 2',
-    category: 'Minimalis',
-    price: 17000000,
-    rating: 4.5,
-    reviewCount: 20,
-    image: '/images/products/gazebo-minimalis-2.jpg',
-    description: 'Varian lain dari gazebo minimalis dengan sentuhan modern yang elegan.',
-    features: ['Kayu Berkualitas', 'Desain Minimalis', 'Tahan Lama'],
-    sizes: ['3x3', '4x4', '5x5'],
-    colors: ['#8B5A2B', '#5D4037', '#3E2723']
+// Fungsi untuk mengambil data produk dari API
+async function getProducts(): Promise<Product[]> {
+  // Menggunakan environment variable untuk base URL API
+  const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+    ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/produk`
+    : 'http://kgr-backend.test/api/produk'; // Fallback URL untuk development
+  
+  console.log('Mengambil data dari:', API_URL);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout setelah 15 detik
+  
+  try {
+    console.log('Mencoba fetch ke:', API_URL);
+    
+    const res = await fetch(API_URL, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      },
+      next: { revalidate: 0 }
+    });
+    
+    // Cek status response
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('Response error:', errorText);
+      
+      let errorMessage = 'Gagal mengambil data produk';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorText;
+      } catch (e) {
+        errorMessage = errorText || 'Tidak ada pesan error';
+      }
+      
+      throw new Error(errorMessage);
+    }
+    
+    // Parse response JSON
+    const data = await res.json();
+    console.log('Data dari API:', JSON.stringify(data, null, 2));
+    
+    // Pastikan data adalah array
+    if (!Array.isArray(data)) {
+      console.error('Format data tidak valid, bukan array:', data);
+      return [];
+    }
+    
+    // Map data ke format yang diharapkan
+    return data.map((item: any) => {
+      // Dapatkan path gambar dari berbagai kemungkinan field
+      let imagePath = item.gambar || item.image || '';
+      let imageUrl = '/images/placeholder.jpg';
+
+      // Proses path gambar jika ada
+      if (imagePath) {
+        // Hapus awalan 'storage/' atau '/' jika ada
+        imagePath = imagePath.replace(/^\/|^storage\//, '');
+        
+        // Buat URL lengkap
+        imageUrl = `http://kgr-backend.test/storage/${imagePath}`;
+      }
+      
+      // Pastikan URL gambar valid
+      console.log(`Mengolah gambar untuk produk ${item.id}:`, {
+        original: item.gambar || item.image,
+        processed: imageUrl
+      });
+      
+      if (!imageUrl || imageUrl === '/images/placeholder.jpg') {
+        console.warn('URL gambar tidak valid untuk produk:', item.id, 'Gambar:', item.gambar || item.image);
+      }
+      
+      return {
+        id: item.id,
+        slug: item.slug || `produk-${item.id}`,
+        name: item.name || 'Produk Tanpa Nama',
+        price: item.price || 0,
+        image: imageUrl,
+        rating: 0, // Default rating 0
+        reviewCount: 0, // Default review count 0
+        category: 'Gazebo', // Default kategori
+        description: item.description || 'Deskripsi produk tidak tersedia',
+        specs: item.specs || '' // Tambahkan spesifikasi jika ada
+      } as Product;
+    });
+      
+  } catch (error) {
+    // Hapus timeout jika terjadi error
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error) {
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      if (error.name === 'AbortError') {
+        throw new Error('Permintaan ke server melebihi batas waktu 15 detik');
+      }
+      
+      throw error;
+    } else {
+      console.error('Error details tidak tersedia:', error);
+      throw new Error('Terjadi kesalahan yang tidak diketahui');
+    }
   }
-];
+}
 
-const categories = ['Semua', ...new Set(products.map(p => p.category))];
+export default async function ProductsPage() {
+  let products: Product[] = [];
+  
+  try {
+    products = await getProducts();
+  } catch (error) {
+    console.error('Gagal memuat produk:', error);
+  }
+  
+  const categories = ['Semua', 'Minimalis', 'Klasik', 'Modern', 'Tradisional', 'Besar'];
 
-const ProductsPage = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -101,7 +159,7 @@ const ProductsPage = () => {
         <div className="container mx-auto px-4 text-center relative z-10">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Koleksi Produk</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-          Temukan gazebo berkualitas tinggi dengan desain elegan untuk mempercantik ruang luar Anda
+            Temukan gazebo berkualitas tinggi dengan desain elegan untuk mempercantik ruang luar Anda
           </p>
         </div>
       </section>
@@ -117,15 +175,15 @@ const ProductsPage = () => {
               <input
                 type="text"
                 placeholder="Cari produk..."
-                className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
             </div>
             <div className="w-full md:w-auto flex gap-2">
-              <button className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
                 <FaFilter />
                 Filter
               </button>
-              <select className="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+              <select className="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
                 <option>Urutkan: Terpopuler</option>
                 <option>Harga: Rendah ke Tinggi</option>
                 <option>Harga: Tinggi ke Rendah</option>
@@ -135,61 +193,64 @@ const ProductsPage = () => {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {['Semua', 'Minimalis', 'Klasik', 'Modern', 'Tradisional', 'Besar'].map((cat) => (
+          <div className="flex flex-wrap gap-2 mb-8">
+            {categories.map((category) => (
               <button
-                key={cat}
+                key={category}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  cat === 'Semua' 
-                    ? 'bg-black text-white hover:bg-gray-800' 
+                  category === 'Semua' 
+                    ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {cat}
+                {category}
               </button>
             ))}
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-red-500">
-                <div className="relative h-48 bg-gray-100 flex items-center justify-center">
-                  <span className="text-gray-400">Gambar {product.name}</span>
-                  <div className="absolute top-3 right-3 flex gap-2">
-                    <button className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors shadow-sm">
-                      <FaHeart />
-                    </button>
-                    <button className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors shadow-sm">
-                      <FaShoppingCart />
-                    </button>
-                  </div>
+              <div key={product.id} className="bg-white rounded-lg shadow overflow-hidden hover:shadow-md transition-shadow duration-300 border border-gray-100">
+                <div className="relative h-48 bg-gray-100">
+                  <ProductImage
+                    src={product.image}
+                    alt={product.name}
+                    fill
+                    style={{ objectFit: 'cover' }}
+                    className="hover:opacity-90 transition-opacity duration-300"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    fallbackSrc="/images/placeholder.jpg"
+                  />
+                  <button className="absolute top-2 right-2 p-2 bg-white rounded-full shadow-md text-gray-600 hover:text-red-500 transition-colors">
+                    <FaHeart className="h-5 w-5" />
+                  </button>
                 </div>
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-2">
-                    <div>
-                      <span className="text-sm text-gray-500">{product.category}</span>
-                      <h3 className="text-lg font-bold text-black">{product.name}</h3>
-                    </div>
-                    <span className="text-lg font-bold text-red-600">
-                      Rp {product.price.toLocaleString('id-ID')}
+                <div className="p-4">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {product.name}
+                    </h3>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {product.category}
                     </span>
                   </div>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="flex text-yellow-400">
-                        {[...Array(5)].map((_, i) => (
-                          <FaStar key={i} className={i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-200'} />
-                        ))}
-                      </div>
-                      <span className="text-sm text-gray-500 ml-1">({product.reviewCount})</span>
-                    </div>
+                  <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+                    {product.description}
+                  </p>
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-lg font-bold text-gray-900">
+                      {new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0,
+                      }).format(product.price)}
+                    </p>
                     <Link 
-                      href={`/produk/${product.id}`}
-                      className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center group"
+                      href={`/produk/${product.slug}`}
+                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      Lihat Detail <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+                      Lihat Detail
                     </Link>
                   </div>
                 </div>
@@ -198,12 +259,12 @@ const ProductsPage = () => {
           </div>
 
           {/* Pagination */}
-          <div className="flex justify-center mt-12">
+          <div className="mt-8 flex justify-center">
             <nav className="flex items-center gap-1">
               <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors">
                 &laquo;
               </button>
-              <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
+              <button className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 transition-colors">
                 1
               </button>
               <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
@@ -212,11 +273,7 @@ const ProductsPage = () => {
               <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
                 3
               </button>
-              <span className="px-2 text-gray-500">...</span>
-              <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
-                10
-              </button>
-              <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
+              <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors">
                 &raquo;
               </button>
             </nav>
@@ -225,24 +282,24 @@ const ProductsPage = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-black py-16 mt-16">
+      <div className="bg-gray-100 py-16 mt-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Butuh Bantuan Memilih Produk?</h2>
-          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
-            Tim ahli kami siap membantu Anda menemukan gazebo yang sempurna untuk kebutuhan Anda.
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Butuh Bantuan Memilih Gazebo?</h2>
+          <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
+            Tim ahli kami siap membantu Anda memilih gazebo yang sempurna untuk kebutuhan Anda. Hubungi kami untuk konsultasi gratis.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link 
-              href="/hubungi-kami"
-              className="px-8 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+              href="/hubungi-kami" 
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-8 rounded-lg transition-colors inline-block"
             >
               Hubungi Kami
             </Link>
             <Link 
-              href="tel:+6281234567890"
-              className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+              href="tel:+6281234567890" 
+              className="bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 font-medium py-3 px-8 rounded-lg transition-colors inline-flex items-center justify-center"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
               </svg>
               +62 812-3456-7890
@@ -252,6 +309,4 @@ const ProductsPage = () => {
       </div>
     </div>
   );
-};
-
-export default ProductsPage;
+}
