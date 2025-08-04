@@ -53,7 +53,7 @@ const ServiceOverview = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-b from-wood-50 to-white">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div 
           className="text-center mb-16"
@@ -62,11 +62,11 @@ const ServiceOverview = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-block text-amber-600 font-semibold mb-3">Mengapa Memilih Kami</span>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-wood-900 mb-4">
+          <span className="inline-block text-red-600 font-semibold mb-3">Mengapa Memilih Kami</span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black mb-4">
             Keunggulan Layanan Kami
           </h2>
-          <div className="w-24 h-1 bg-amber-500 mx-auto rounded-full"></div>
+          <div className="w-24 h-1 bg-red-600 mx-auto rounded-full"></div>
         </motion.div>
 
         <motion.div 
@@ -79,17 +79,17 @@ const ServiceOverview = () => {
           {features.map((feature, index) => (
             <motion.div 
               key={index}
-              className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-wood-100 hover:border-amber-100"
+              className="group bg-white p-8 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-red-500"
               variants={item}
               whileHover={{ y: -5 }}
             >
-              <div className="w-16 h-16 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600 mb-6 mx-auto group-hover:bg-amber-100 transition-colors duration-300">
+              <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-red-600 mb-6 mx-auto group-hover:bg-gray-200 transition-colors duration-300">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold text-center text-wood-900 mb-3">
+              <h3 className="text-xl font-bold text-center text-black mb-3">
                 {feature.title}
               </h3>
-              <p className="text-wood-600 text-center">
+              <p className="text-gray-600 text-center">
                 {feature.description}
               </p>
             </motion.div>

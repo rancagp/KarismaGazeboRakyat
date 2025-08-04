@@ -94,116 +94,103 @@ const categories = ['Semua', ...new Set(products.map(p => p.category))];
 
 const ProductsPage = () => {
   return (
-    <div className="min-h-screen bg-wood-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative h-96 bg-wood-800 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/50 z-0"></div>
+      <section className="relative h-96 bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="absolute inset-0 z-0"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Produk Kami</h1>
-          <p className="text-xl text-amber-100 max-w-3xl mx-auto">
-            Temukan gazebo berkualitas tinggi dengan desain yang elegan dan fungsional
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Koleksi Produk</h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          Temukan gazebo berkualitas tinggi dengan desain elegan untuk mempercantik ruang luar Anda
           </p>
         </div>
       </section>
 
       {/* Products Section */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          {/* Filter & Search */}
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-            <div className="relative w-full md:w-96">
+      <div className="container mx-auto px-4 py-12">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-200">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+            <div className="relative w-full md:w-1/3">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FaSearch className="text-gray-400" />
+              </div>
               <input
                 type="text"
                 placeholder="Cari produk..."
-                className="w-full pl-10 pr-4 py-2 rounded-lg border border-wood-300 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+                className="pl-10 pr-4 py-2 w-full border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
               />
-              <FaSearch className="absolute left-3 top-3 text-wood-400" />
             </div>
-            
-            <div className="flex items-center gap-4 w-full md:w-auto">
-              <div className="relative">
-                <select 
-                  className="appearance-none bg-white border border-wood-300 rounded-lg pl-4 pr-10 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                >
-                  <option>Urutkan</option>
-                  <option>Harga Terendah</option>
-                  <option>Harga Tertinggi</option>
-                  <option>Rating Tertinggi</option>
-                  <option>Terbaru</option>
-                </select>
-                <div className="absolute right-3 top-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-wood-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </div>
-              
-              <button className="flex items-center gap-2 bg-white border border-wood-300 rounded-lg px-4 py-2 text-wood-700 hover:bg-wood-50 transition-colors">
+            <div className="w-full md:w-auto flex gap-2">
+              <button className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
                 <FaFilter />
-                <span>Filter</span>
+                Filter
               </button>
+              <select className="border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                <option>Urutkan: Terpopuler</option>
+                <option>Harga: Rendah ke Tinggi</option>
+                <option>Harga: Tinggi ke Rendah</option>
+                <option>Rating Tertinggi</option>
+              </select>
             </div>
           </div>
 
           {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2 mb-8 overflow-x-auto pb-2">
-            {categories.map((category) => (
+          <div className="flex flex-wrap gap-2">
+            {['Semua', 'Minimalis', 'Klasik', 'Modern', 'Tradisional', 'Besar'].map((cat) => (
               <button
-                key={category}
+                key={cat}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  category === 'Semua'
-                    ? 'bg-wood-600 text-white'
-                    : 'bg-white text-wood-700 hover:bg-wood-100 border border-wood-200'
+                  cat === 'Semua' 
+                    ? 'bg-black text-white hover:bg-gray-800' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {category}
+                {cat}
               </button>
             ))}
           </div>
 
           {/* Products Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {products.map((product) => (
-              <div key={product.id} className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
-                <div className="relative h-64 bg-wood-100 flex items-center justify-center">
-                  <span className="text-wood-400">Gambar {product.name}</span>
-                  <div className="absolute top-4 right-4 flex flex-col gap-2">
-                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-wood-600 hover:text-amber-500 transition-colors shadow-md">
+              <div key={product.id} className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-300 border border-gray-200 hover:border-red-500">
+                <div className="relative h-48 bg-gray-100 flex items-center justify-center">
+                  <span className="text-gray-400">Gambar {product.name}</span>
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    <button className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors shadow-sm">
                       <FaHeart />
                     </button>
-                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-wood-600 hover:text-amber-500 transition-colors shadow-md">
-                      <FaSearch />
+                    <button className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center text-gray-600 hover:text-red-600 transition-colors shadow-sm">
+                      <FaShoppingCart />
                     </button>
-                  </div>
-                  <div className="absolute bottom-4 left-4 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {product.category}
                   </div>
                 </div>
-                
-                <div className="p-6">
+                <div className="p-5">
                   <div className="flex justify-between items-start mb-2">
-                    <Link href={`/produk/${product.id}`} className="hover:text-amber-600 transition-colors">
-                      <h3 className="text-xl font-bold text-wood-900 line-clamp-1">{product.name}</h3>
-                    </Link>
-                    <div className="flex items-center bg-amber-100 text-amber-800 px-2 py-1 rounded text-sm">
-                      <FaStar className="text-amber-500 mr-1" />
-                      <span>{product.rating}</span>
-                      <span className="text-wood-500 text-xs ml-1">({product.reviewCount})</span>
+                    <div>
+                      <span className="text-sm text-gray-500">{product.category}</span>
+                      <h3 className="text-lg font-bold text-black">{product.name}</h3>
                     </div>
-                  </div>
-                  
-                  <p className="text-wood-600 text-sm mb-4 line-clamp-2">
-                    {product.description}
-                  </p>
-                  
-                  <div className="flex items-center justify-between mt-4">
-                    <span className="text-2xl font-bold text-wood-900">
+                    <span className="text-lg font-bold text-red-600">
                       Rp {product.price.toLocaleString('id-ID')}
                     </span>
-                    <button className="bg-wood-600 hover:bg-wood-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                      <FaShoppingCart />
-                      <span>Pesan</span>
-                    </button>
+                  </div>
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) => (
+                          <FaStar key={i} className={i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-200'} />
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-500 ml-1">({product.reviewCount})</span>
+                    </div>
+                    <Link 
+                      href={`/produk/${product.id}`}
+                      className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center group"
+                    >
+                      Lihat Detail <span className="ml-1 group-hover:translate-x-1 transition-transform">→</span>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -213,44 +200,47 @@ const ProductsPage = () => {
           {/* Pagination */}
           <div className="flex justify-center mt-12">
             <nav className="flex items-center gap-1">
-              <button className="px-3 py-1 rounded-md text-wood-600 hover:bg-wood-100">
+              <button className="w-10 h-10 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors">
                 &laquo;
               </button>
-              <button className="w-10 h-10 rounded-md bg-wood-600 text-white">
+              <button className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center hover:bg-gray-800 transition-colors">
                 1
               </button>
-              <button className="w-10 h-10 rounded-md text-wood-600 hover:bg-wood-100">
+              <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
                 2
               </button>
-              <button className="w-10 h-10 rounded-md text-wood-600 hover:bg-wood-100">
+              <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
                 3
               </button>
-              <span className="px-2">...</span>
-              <button className="px-3 py-1 rounded-md text-wood-600 hover:bg-wood-100">
+              <span className="px-2 text-gray-500">...</span>
+              <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
+                10
+              </button>
+              <button className="w-10 h-10 rounded-full text-gray-600 hover:bg-gray-100 flex items-center justify-center transition-colors">
                 &raquo;
               </button>
             </nav>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* CTA Section */}
-      <section className="py-16 bg-wood-800 text-white">
+      <div className="bg-black py-16 mt-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Tidak Menemukan yang Anda Cari?</h2>
-          <p className="text-xl text-amber-100 mb-8 max-w-2xl mx-auto">
-            Kami siap membantu mewujudkan gazebo impian Anda dengan desain khusus sesuai kebutuhan.
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Butuh Bantuan Memilih Produk?</h2>
+          <p className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+            Tim ahli kami siap membantu Anda menemukan gazebo yang sempurna untuk kebutuhan Anda.
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link 
-              href="/hubungi-kami" 
-              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors inline-flex items-center justify-center"
+              href="/hubungi-kami"
+              className="px-8 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
             >
-              Konsultasi Gratis
+              Hubungi Kami
             </Link>
             <Link 
-              href="tel:+6281234567890" 
-              className="bg-transparent border-2 border-white hover:bg-white/10 text-white font-semibold py-3 px-8 rounded-lg transition-colors inline-flex items-center justify-center gap-2"
+              href="tel:+6281234567890"
+              className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg font-medium hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -259,7 +249,7 @@ const ProductsPage = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   );
 };

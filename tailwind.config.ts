@@ -9,31 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#fefce8',
-          100: '#fef9c3',
-          200: '#fef08a',
-          300: '#fde047',
-          400: '#facc15',
-          500: '#eab308',
-          600: '#ca8a04',
-          700: '#a16207',
-          800: '#854d0e',
-          900: '#713f12',
-          950: '#422006',
+        black: {
+          DEFAULT: '#000000',
+          light: '#1a1a1a',
+          lighter: '#333333',
         },
-        secondary: {
-          50: '#fefce8',
-          100: '#fef9c3',
-          200: '#fef08a',
-          300: '#fde047',
-          400: '#facc15',
-          500: '#eab308',
-          600: '#ca8a04',
-          700: '#a16207',
-          800: '#854d0e',
-          900: '#713f12',
-          950: '#422006',
+        white: {
+          DEFAULT: '#ffffff',
+          off: '#f5f5f5',
+        },
+        red: {
+          DEFAULT: '#ff0000',
+          dark: '#cc0000',
+        },
+        accent: {
+          light: '#ffcccc',
+          DEFAULT: '#ff0000',
+          dark: '#cc0000',
         },
         wood: {
           50: '#f8f5f0',
@@ -50,11 +42,17 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['var(--font-inter)'],
+        serif: ['var(--font-playfair-display)'],
       },
       boxShadow: {
         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':
+          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
     },
   },

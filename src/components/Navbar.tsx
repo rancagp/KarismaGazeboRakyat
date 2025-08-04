@@ -7,6 +7,7 @@ import { FaBars, FaTimes } from 'react-icons/fa';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isTop, setIsTop] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -14,6 +15,7 @@ const Navbar = () => {
       if (isScrolled !== scrolled) {
         setScrolled(isScrolled);
       }
+      setIsTop(window.scrollY < 10);
     };
 
     document.addEventListener('scroll', handleScroll, { passive: true });
@@ -33,7 +35,9 @@ const Navbar = () => {
   return (
     <nav 
       className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-wood-800/95 shadow-lg' : 'bg-wood-900/90'
+        isTop 
+          ? 'bg-black shadow-none' 
+          : 'bg-black/90 backdrop-blur-sm shadow-lg'
       }`}
     >
       <div className="container mx-auto px-4">
@@ -51,12 +55,12 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:block mr-2 md:mr-2">
-            <div className="ml-10 flex items-baseline space-x-4">
+            <div className="ml-10 flex items-baseline space-x-1">
               {navLinks.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="text-amber-100 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="text-white hover:text-red-500 px-4 py-3 rounded-md text-sm font-medium transition-colors duration-300 hover:bg-white/5"
                 >
                   {item.name}
                 </Link>
@@ -68,7 +72,7 @@ const Navbar = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-amber-200 hover:text-white hover:bg-wood-700 focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-md text-white hover:text-red-500 hover:bg-white/10 focus:outline-none transition-colors duration-300"
               aria-expanded="false"
             >
               <span className="sr-only">Buka menu utama</span>
@@ -84,13 +88,13 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="md:hidden bg-wood-800">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+        <div className={`md:hidden absolute left-0 right-0 top-full z-40 transition-all duration-300 ${scrolled ? 'bg-black/90 backdrop-blur-md' : 'bg-black/95'} border-t border-gray-800`}>
+          <div className="px-4 py-3 space-y-1">
             {navLinks.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-amber-100 hover:bg-wood-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium"
+                className="text-white hover:bg-white/10 hover:text-red-500 block px-4 py-3 rounded-md text-base font-medium transition-colors duration-300"
                 onClick={() => setIsOpen(false)}
               >
                 {item.name}

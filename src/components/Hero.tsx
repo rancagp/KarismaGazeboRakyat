@@ -6,18 +6,17 @@ import Image from 'next/image';
 
 const Hero = () => {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden pt-16">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-wood-900/70"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-wood-900/30 to-wood-900/80"></div>
+    <section className="relative h-screen flex items-center justify-center overflow-hidden pt-20 bg-gradient-to-b from-gray-50 to-gray-100">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 z-0 opacity-10">
+        <div className="absolute inset-0 bg-[url('/images/wood-pattern.png')] bg-repeat"></div>
       </div>
       
       {/* Hero Content */}
       <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
           <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-amber-50 mb-6 leading-tight"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
@@ -26,7 +25,7 @@ const Hero = () => {
           </motion.h1>
           
           <motion.p 
-            className="text-lg md:text-xl text-amber-100 mb-10 max-w-3xl mx-auto"
+            className="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -42,15 +41,15 @@ const Hero = () => {
           >
             <Link 
               href="/produk" 
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 md:py-4 md:text-lg md:px-10 transition-colors duration-300"
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-red-600 hover:bg-red-700 md:py-4 md:text-lg md:px-10 transition-colors duration-300 shadow-lg hover:shadow-red-900/20"
             >
               Lihat Produk
             </Link>
             <Link 
-              href="/kontak" 
-              className="inline-flex items-center justify-center px-8 py-3 border-2 border-amber-200 text-base font-medium rounded-md text-amber-100 bg-transparent hover:bg-amber-900/30 md:py-4 md:text-lg md:px-10 transition-colors duration-300"
+              href="/hubungi-kami" 
+              className="inline-flex items-center justify-center px-8 py-3 border-2 border-gray-800 text-base font-medium rounded-md text-gray-800 hover:bg-gray-800 hover:text-white md:py-4 md:text-lg md:px-10 transition-colors duration-300"
             >
-              Konsultasi Gratis
+              Hubungi Kami
             </Link>
           </motion.div>
         </div>
