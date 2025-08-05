@@ -1,66 +1,134 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FiZoomIn, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiZoomIn, FiX, FiChevronLeft, FiChevronRight, FiLoader } from 'react-icons/fi';
 
-const galleryImages = [
-  { 
-    id: 1, 
-    src: '/images/gazebo1.jpeg', 
-    alt: 'Gazebo Minimalis',
-    category: 'Minimalis',
-    title: 'Gazebo Minimalis di Taman Modern'
-  },
-  { 
-    id: 2, 
-    src: '/images/gazebo1.jpeg', 
-    alt: 'Gazebo Klasik',
-    category: 'Klasik',
-    title: 'Gazebo Kayu Klasik'
-  },
-  { 
-    id: 3, 
-    src: '/images/gazebo1.jpeg', 
-    alt: 'Gazebo Modern',
-    category: 'Modern',
-    title: 'Gazebo Desain Modern'
-  },
-  { 
-    id: 4, 
-    src: '/images/gazebo1.jpeg', 
-    alt: 'Gazebo Taman',
-    category: 'Taman',
-    title: 'Gazebo Taman Asri'
-  },
-  { 
-    id: 5, 
-    src: '/images/gazebo1.jpeg', 
-    alt: 'Gazebo Kayu',
-    category: 'Kayu',
-    title: 'Gazebo Kayu Berkualitas'
-  },
-  { 
-    id: 6, 
-    src: '/images/gazebo1.jpeg', 
-    alt: 'Gazebo Mewah',
-    category: 'Mewah',
-    title: 'Gazebo Mewah'
-  },
-];
+// Tipe data untuk gambar galeri
+interface GalleryImage {
+  id: number;
+  title: string;
+  category: string;
+  description: string;
+  image: string;
+  alt?: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+}
 
-const categories = ['Semua', ...new Set(galleryImages.map(img => img.category))];
+// Fungsi untuk memproses URL gambar
+function processImageUrl(path: string): string {
+  if (!path) return '/images/placeholder.jpg';
+  
+  // Jika path sudah full URL, langsung kembalikan
+  if (path.startsWith('http')) {
+    return path;
+  }
+  
+  // Dapatkan base URL tanpa /api
+  let baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://kgr-backend.test';
+  baseUrl = baseUrl.replace(/\/api\/?$/, '');
+  baseUrl = baseUrl.replace(/\/$/, '');
+  
+  // Ambil nama file dari path lengkap
+  const fileName = path.split('/').pop();
+  
+  // Arahkan ke direktori img/galeri di root public
+  return `${baseUrl}/img/galeri/${fileName}`;
+}
 
+// Komponen untuk menampilkan loading
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center py-12">
+    <FiLoader className="animate-spin text-4xl text-red-600" />
+    <span className="ml-2">Memuat galeri...</span>
+  </div>
+);
+
+// Komponen untuk menampilkan pesan error
+const ErrorMessage = ({ message }: { message: string }) => (
+  <div className="text-center py-12 text-red-500">
+    <p>Terjadi kesalahan: {message}</p>
+  </div>
+);
+
+// Komponen untuk menampilkan galeri kosong
+const EmptyGallery = () => (
+  <div className="text-center py-12">
+    <p className="text-gray-500">Belum ada gambar di galeri.</p>
+  </div>
+);
+
+// Komponen utama Gallery
 const Gallery = () => {
+  // State untuk data galeri
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [filteredImages, setFilteredImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // State untuk lightbox
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [category, setCategory] = useState('Semua');
   const [isOpen, setIsOpen] = useState(false);
+  
+  // Ambil data galeri dari API
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        setLoading(true);
+        const API_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://kgr-backend.test/api') + '/galeri';
+        const res = await fetch(API_URL, { cache: 'no-store' });
+        
+        if (!res.ok) throw new Error('Gagal mengambil data galeri');
+        
+        const data = await res.json();
+        
+        // Format data sesuai dengan yang dibutuhkan
+        const formattedData = data.map((item: any) => ({
+          id: item.id,
+          title: item.judul || 'Tanpa Judul',
+          category: item.kategori || 'Tanpa Kategori',
+          description: item.isi || 'Tidak ada deskripsi',
+          image: processImageUrl(item.image || ''),
+          alt: item.judul || 'Gambar galeri',
+          slug: item.slug || '',
+          created_at: item.created_at,
+          updated_at: item.updated_at
+        }));
+        
+        setGalleryImages(formattedData);
+        setFilteredImages(formattedData);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching gallery:', err);
+        setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memuat galeri');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const filteredImages = category === 'Semua' 
-    ? galleryImages 
-    : galleryImages.filter(img => img.category === category);
+    fetchGallery();
+  }, []);
+  
+  // Filter gambar berdasarkan kategori
+  useEffect(() => {
+    if (!galleryImages.length) return;
+    
+    let result = [...galleryImages];
+    
+    if (category !== 'Semua') {
+      result = result.filter(img => img.category === category);
+    }
+    
+    setFilteredImages(result);
+  }, [category, galleryImages]);
+  
+  // Dapatkan daftar kategori unik
+  const categories = ['Semua', ...new Set(galleryImages.map(img => img.category))];
 
   const openLightbox = (index: number) => {
     setSelectedImage(index);
@@ -133,22 +201,29 @@ const Gallery = () => {
           ))}
         </motion.div>
 
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          variants={{
-            hidden: { opacity: 0 },
-            show: {
-              opacity: 1,
-              transition: {
-                staggerChildren: 0.1,
-                delayChildren: 0.2
+        {loading ? (
+          <LoadingSpinner />
+        ) : error ? (
+          <ErrorMessage message={error} />
+        ) : filteredImages.length === 0 ? (
+          <EmptyGallery />
+        ) : (
+          <motion.div 
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.1,
+                  delayChildren: 0.2
+                }
               }
-            }
-          }}
-          initial="hidden"
-          animate="show"
-        >
-          {filteredImages.map((item, index) => (
+            }}
+            initial="hidden"
+            animate="show"
+          >
+            {filteredImages.map((item, index) => (
             <motion.div 
               key={item.id}
               className="group relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 h-64 bg-gray-100"
@@ -164,15 +239,19 @@ const Gallery = () => {
             >
               <div className="relative w-full h-full">
                 <Image
-                  src={item.src}
-                  alt={item.alt}
+                  src={item.image}
+                  alt={item.alt || item.title}
                   fill
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2E5YjUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOSAxMWE3IDcgMCAwIDEtMTQgMHM3IDcgNyA3IDctNyA3LTd6Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMCIgcj0iMyIvPjwvc3ZnPg==';
+                  }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                    <h3 className="text-white font-semibold">{item.title}</h3>
+                    <h3 className="text-white font-semibold line-clamp-1">{item.title}</h3>
                     <span className="text-red-400 text-sm">{item.category}</span>
                   </div>
                 </div>
@@ -190,7 +269,7 @@ const Gallery = () => {
                   <FiZoomIn className="w-5 h-5" />
                 </button>
                 <Link 
-                  href={`/galeri/${item.id}`}
+                  href={`/galeri/${item.slug || item.id}`}
                   className="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-sm font-medium transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -199,7 +278,8 @@ const Gallery = () => {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+          </motion.div>
+        )}
 
         <motion.div 
           className="text-center mt-16"
@@ -220,43 +300,70 @@ const Gallery = () => {
         </motion.div>
 
         {/* Lightbox */}
-        {isOpen && selectedImage !== null && (
-          <div 
-            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
-            onClick={handleBackdropClick}
-          >
-            <button 
-              onClick={closeLightbox}
-              className="absolute top-4 right-4 text-white hover:text-red-500 transition-colors"
-              aria-label="Close lightbox"
+        <AnimatePresence>
+          {isOpen && selectedImage !== null && (
+            <motion.div 
+              className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+              onClick={handleBackdropClick}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              <FiX className="w-8 h-8" />
-            </button>
-            
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                navigateImage('prev');
-              }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-red-500 transition-colors p-2"
-              aria-label="Previous image"
-            >
-              <FiChevronLeft className="w-8 h-8" />
-            </button>
-            
-            <div className="relative max-w-4xl w-full max-h-[90vh] flex items-center justify-center">
-              <img 
-                src={filteredImages[selectedImage].src} 
-                alt={filteredImages[selectedImage].alt} 
-                className="max-w-full max-h-[80vh] object-contain"
-              />
-              <div className="absolute bottom-4 left-0 right-0 text-center text-white">
-                <h3 className="text-xl font-semibold">{filteredImages[selectedImage].title}</h3>
-                <p className="text-red-400">{filteredImages[selectedImage].category}</p>
+              <button 
+                onClick={closeLightbox}
+                className="absolute top-4 right-4 text-white hover:text-red-500 transition-colors z-10"
+                aria-label="Tutup lightbox"
+              >
+                <FiX className="w-8 h-8" />
+              </button>
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateImage('prev');
+                }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-red-500 transition-colors p-2 z-10 bg-black/50 rounded-full"
+                aria-label="Gambar sebelumnya"
+              >
+                <FiChevronLeft className="w-8 h-8" />
+              </button>
+              
+              <div className="relative max-w-4xl w-full max-h-[90vh]">
+                <motion.div
+                  key={selectedImage}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className="relative w-full h-full"
+                >
+                  <Image
+                    src={filteredImages[selectedImage].image}
+                    alt={filteredImages[selectedImage].alt || filteredImages[selectedImage].title}
+                    width={1200}
+                    height={800}
+                    className="max-w-full max-h-[80vh] w-auto h-auto mx-auto object-contain"
+                  />
+                  <div className="mt-4 text-center text-white">
+                    <h3 className="text-xl font-bold">{filteredImages[selectedImage].title}</h3>
+                    <p className="text-gray-300 mt-2">{filteredImages[selectedImage].description}</p>
+                  </div>
+                </motion.div>
               </div>
-            </div>
-          </div>
-        )}
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigateImage('next');
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-red-500 transition-colors p-2 z-10 bg-black/50 rounded-full"
+                aria-label="Gambar berikutnya"
+              >
+                <FiChevronRight className="w-8 h-8" />
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
   );
