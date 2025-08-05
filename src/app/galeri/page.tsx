@@ -58,11 +58,12 @@ async function getGalleryImages() {
     
     return data.map((item: any) => ({
       id: item.id,
-      title: item.title,
-      category: item.category,
-      description: item.description || '',
-      image: processImageUrl(item.image || item.gambar || ''),
-      alt: item.title,
+      title: item.judul || 'Tanpa Judul',
+      category: item.kategori || 'Tanpa Kategori',
+      description: item.isi || 'Tidak ada deskripsi',
+      image: processImageUrl(item.image || ''),
+      alt: item.judul || 'Gambar galeri',
+      slug: item.slug || '',
       created_at: item.created_at,
       updated_at: item.updated_at
     }));
@@ -76,16 +77,20 @@ async function getGalleryImages() {
 function processImageUrl(path: string): string {
   if (!path) return '/images/placeholder.jpg';
   
-  // Hapus awalan yang tidak diperlukan
-  const cleanPath = path.replace(/^\/|^storage\//, '');
-  const fileName = cleanPath.split('/').pop();
+  // Jika path sudah full URL, langsung kembalikan
+  if (path.startsWith('http')) {
+    return path;
+  }
   
   // Dapatkan base URL tanpa /api
   let baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://kgr-backend.test';
   baseUrl = baseUrl.replace(/\/api\/?$/, '');
   baseUrl = baseUrl.replace(/\/$/, '');
   
-  // Kembalikan URL lengkap
+  // Ambil nama file dari path lengkap
+  const fileName = path.split('/').pop();
+  
+  // Arahkan ke direktori img/galeri di root public
   return `${baseUrl}/img/galeri/${fileName}`;
 }
 
@@ -121,6 +126,9 @@ const GalleryPage = () => {
       try {
         setLoading(true);
         const data = await getGalleryImages();
+        
+        // Debug: Tampilkan data yang diterima
+        console.log('Data galeri yang diterima:', data);
         
         setGalleryImages(data);
         setFilteredImages(data);
@@ -305,6 +313,11 @@ const GalleryPage = () => {
                       src={image.image}
                       alt={image.alt || image.title}
                       className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        console.error('Gagal memuat gambar:', image.image);
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2E5YjUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOSAxMWE3IDcgMCAwIDEtMTQgMHM3IDcgNyA3IDctNyA3LTd6Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMCIgcj0iMyIvPjwvc3ZnPg==';
+                      }}
                     />
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
                       <FiZoomIn className="text-white text-3xl opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300" />
