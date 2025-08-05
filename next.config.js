@@ -18,6 +18,12 @@ const nextConfig = {
         port: '',
         pathname: '/storage/**',
       },
+      {
+        protocol: 'http',
+        hostname: 'kgr-backend.test',
+        port: '',
+        pathname: '/img/**',
+      },
     ],
   },
   // Configure CORS for API routes

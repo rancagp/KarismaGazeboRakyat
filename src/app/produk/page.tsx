@@ -9,7 +9,6 @@ interface Product {
   name: string;
   slug: string;
   description: string;
-  price: number;
   image: string;
   category: string;
   rating: number;
@@ -78,6 +77,9 @@ async function getProducts(): Promise<Product[]> {
       return [];
     }
     
+    // Debug: Tampilkan data mentah dari API
+    console.log('Data mentah dari API:', JSON.stringify(data, null, 2));
+    
     // Map data ke format yang diharapkan
     return data.map((item: any) => {
       // Dapatkan path gambar dari berbagai kemungkinan field
@@ -86,11 +88,32 @@ async function getProducts(): Promise<Product[]> {
 
       // Proses path gambar jika ada
       if (imagePath) {
+        console.log('Path gambar asli:', imagePath);
+        
         // Hapus awalan 'storage/' atau '/' jika ada
         imagePath = imagePath.replace(/^\/|^storage\//, '');
         
-        // Buat URL lengkap
-        imageUrl = `http://kgr-backend.test/storage/${imagePath}`;
+        // Dapatkan nama file dari path
+        const fileName = imagePath.split('/').pop();
+        
+        // Dapatkan base URL tanpa /api di akhir jika ada
+        let baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://kgr-backend.test';
+        // Hapus /api dari akhir URL jika ada
+        baseUrl = baseUrl.replace(/\/api\/?$/, '');
+        
+        // Pastikan base URL tidak diakhiri dengan /
+        baseUrl = baseUrl.replace(/\/$/, '');
+        
+        // Gunakan path yang benar ke direktori gambar
+        // Sesuai dengan lokasi sebenarnya di public/img/produk/produk/
+        imageUrl = `${baseUrl}/img/produk/produk/${fileName}`;
+        
+        console.log('URL gambar yang dibangun:', imageUrl);
+        
+        // Jika path gambar sudah merupakan URL lengkap, gunakan langsung
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+          imageUrl = imagePath;
+        }
       }
       
       // Pastikan URL gambar valid
@@ -112,7 +135,7 @@ async function getProducts(): Promise<Product[]> {
         rating: 0, // Default rating 0
         reviewCount: 0, // Default review count 0
         category: 'Gazebo', // Default kategori
-        description: item.description || 'Deskripsi produk tidak tersedia',
+        description: item.deskripsi || item.description || 'Deskripsi produk tidak tersedia',
         specs: item.specs || '' // Tambahkan spesifikasi jika ada
       } as Product;
     });
@@ -238,21 +261,12 @@ export default async function ProductsPage() {
                   <p className="mt-2 text-sm text-gray-600 line-clamp-2">
                     {product.description}
                   </p>
-                  <div className="mt-3 flex items-center justify-between">
-                    <p className="text-lg font-bold text-gray-900">
-                      {new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        minimumFractionDigits: 0,
-                      }).format(product.price)}
-                    </p>
-                    <Link 
-                      href={`/produk/${product.slug}`}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                    >
-                      Lihat Detail
-                    </Link>
-                  </div>
+                  <Link 
+                    href={`/produk/${product.slug}`}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    Lihat Detail
+                  </Link>
                 </div>
               </div>
             ))}

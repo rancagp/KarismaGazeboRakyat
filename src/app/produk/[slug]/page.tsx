@@ -17,20 +17,33 @@ interface Product {
 // Fungsi untuk mengambil data produk berdasarkan slug
 async function getProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const res = await fetch(`http://localhost:8000/api/produk/${slug}`, {
-      next: { revalidate: 60 } // Revalidate setiap 60 detik
+    // Gunakan environment variable untuk base URL API
+    const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+      ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/produk/${slug}`
+      : `http://kgr-backend.test/api/produk/${slug}`;
+    
+    console.log('Mengambil detail produk dari:', API_URL);
+    
+    const res = await fetch(API_URL, {
+      next: { revalidate: 60 }, // Revalidate setiap 60 detik
+      headers: {
+        'Accept': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
 
     if (!res.ok) {
+      console.error(`Gagal mengambil data produk (${res.status}):`, res.statusText);
       if (res.status === 404) {
         console.error('Produk tidak ditemukan');
-      } else {
-        console.error('Gagal mengambil data produk:', res.statusText);
       }
       return null;
     }
 
     const data = await res.json();
+    console.log('Data produk yang diterima:', JSON.stringify(data, null, 2));
     
     // Pastikan data yang dikembalikan sesuai dengan tipe Product
     if (!data || !data.id) {
@@ -38,14 +51,26 @@ async function getProductBySlug(slug: string): Promise<Product | null> {
       return null;
     }
 
+    // Dapatkan path gambar yang benar
+    let imageUrl = data.gambar || data.image || '';
+    if (imageUrl) {
+      const fileName = imageUrl.split('/').pop();
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL 
+        ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '')
+        : 'http://kgr-backend.test';
+      imageUrl = `${baseUrl}/img/produk/produk/${fileName}`;
+    } else {
+      imageUrl = '/images/placeholder-product.jpg';
+    }
+
     return {
       id: data.id,
-      name: data.name || 'Nama Produk',
+      name: data.name || data.nama || 'Nama Produk',
       slug: data.slug || slug,
-      description: data.deskripsi || 'Tidak ada deskripsi',
-      specs: data.specs || '',
-      price: data.harga || 0,
-      image: data.gambar || '/images/placeholder-product.jpg'
+      description: data.deskripsi || data.description || 'Tidak ada deskripsi',
+      specs: data.specs || data.spesifikasi || '',
+      price: data.harga || data.price || 0,
+      image: imageUrl
     };
   } catch (error) {
     console.error('Error fetching product:', error);
