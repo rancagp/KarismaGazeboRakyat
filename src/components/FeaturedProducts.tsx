@@ -3,32 +3,81 @@
 import { motion, Variants } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
-const products = [
-  {
-    id: 1,
-    name: 'Gazebo Minimalis',
-    description: 'Gazebo dengan desain minimalis yang cocok untuk halaman rumah Anda, memberikan kesan lapang dan modern.',
-    features: ['Kayu Jati Tahan Lama', 'Atap Tahan Air', 'Desain Modern'],
-    image: '/images/gazebo1.jpeg'
-  },
-  {
-    id: 2,
-    name: 'Gazebo Klasik',
-    description: 'Gazebo dengan sentuhan klasik yang elegan dan mewah, cocok untuk taman bergaya tradisional.',
-    features: ['Kayu Ulin Kokoh', 'Ukiran Klasik', 'Finishing Halus'],
-    image: '/images/gazebo1.jpeg'
-  },
-  {
-    id: 3,
-    name: 'Gazebo Modern',
-    description: 'Gazebo dengan desain modern dan fungsional untuk ruang luar Anda, minimalis namun elegan.',
-    features: ['Desain Kekinian', 'Material Berkualitas', 'Perawatan Mudah'],
-    image: '/images/gazebo1.jpeg'
-  }
-];
+interface Product {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  category: string;
+  specs?: string;
+}
 
 const FeaturedProducts = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL 
+          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/produk`
+          : 'http://kgr-backend.test/api/produk';
+        
+        const res = await fetch(API_URL, {
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error('Gagal mengambil data produk');
+        }
+
+        const data = await res.json();
+        
+        // Ambil 3 produk pertama untuk ditampilkan
+        const featuredProducts = data.slice(0, 3).map((item: any) => ({
+          id: item.id,
+          name: item.name || 'Nama Produk',
+          slug: item.slug || `produk-${item.id}`,
+          description: item.deskripsi || item.description || 'Tidak ada deskripsi',
+          image: item.gambar || item.image || '/images/placeholder-product.jpg',
+          category: item.category || 'Gazebo',
+          specs: item.specs || item.spesifikasi || ''
+        }));
+
+        setProducts(featuredProducts);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Gagal memuat produk. Silakan coba lagi nanti.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Fungsi untuk mendapatkan path gambar yang benar
+  const getImageUrl = (imagePath: string) => {
+    if (!imagePath) return '/images/placeholder-product.jpg';
+    if (imagePath.startsWith('http')) return imagePath;
+    
+    const fileName = imagePath.split('/').pop();
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL 
+      ? process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/api\/?$/, '')
+      : 'http://kgr-backend.test';
+    
+    return `${baseUrl}/img/produk/produk/${fileName}`;
+  };
   const container: Variants = {
     hidden: { opacity: 0 },
     show: {
@@ -71,13 +120,28 @@ const FeaturedProducts = () => {
           </p>
         </motion.div>
 
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          variants={container}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: "-100px" }}
-        >
+        {loading ? (
+          <div className="flex justify-center items-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-600"></div>
+          </div>
+        ) : error ? (
+          <div className="text-center py-10 text-red-600">
+            <p>{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              Coba Lagi
+            </button>
+          </div>
+        ) : (
+          <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-100px" }}
+          >
           {products.map((product) => (
             <motion.div 
               key={product.id}
@@ -87,7 +151,7 @@ const FeaturedProducts = () => {
             >
               <div className="h-64 bg-gray-50 relative overflow-hidden">
                 <Image
-                  src={product.image}
+                  src={getImageUrl(product.image)}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -95,11 +159,9 @@ const FeaturedProducts = () => {
                 />
                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
                   <div className="flex flex-wrap gap-2">
-                    {product.features.map((feature, index) => (
-                      <span key={index} className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium">
-                        {feature}
-                      </span>
-                    ))}
+                    <span className="text-xs bg-red-600 text-white px-3 py-1 rounded-full font-medium">
+                      {product.category}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -110,19 +172,19 @@ const FeaturedProducts = () => {
                   <div className="text-right">
                   </div>
                 </div>
-                <p className="text-gray-600 mb-6 flex-grow">{product.description}</p>
-                <ul className="space-y-2 mb-6">
-                  {product.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
-                      <svg className="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                      <span className="text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-gray-600 mb-6 flex-grow line-clamp-3">
+                  {product.description}
+                </p>
+                {product.specs && (
+                  <div className="mb-6">
+                    <div className="text-sm font-medium text-gray-700 mb-2">Spesifikasi:</div>
+                    <div className="text-sm text-gray-600 line-clamp-3">
+                      {product.specs}
+                    </div>
+                  </div>
+                )}
                 <Link 
-                  href={`/produk/${product.id}`}
+                  href={`/produk/${product.slug || product.id}`}
                   className="mt-auto block w-full text-center px-6 py-3 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors duration-300 hover:shadow-lg hover:shadow-red-100"
                 >
                   Lihat Detail
@@ -130,7 +192,8 @@ const FeaturedProducts = () => {
               </div>
             </motion.div>
           ))}
-        </motion.div>
+          </motion.div>
+        )}
 
         <motion.div 
           className="text-center mt-16"
