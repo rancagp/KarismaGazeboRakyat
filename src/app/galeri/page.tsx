@@ -12,6 +12,7 @@ const galleryImages = [
     title: 'Gazebo Minimalis', 
     category: 'Minimalis',
     alt: 'Gazebo Minimalis dengan desain modern',
+    description: 'Gazebo minimalis dengan desain modern yang cocok untuk hunian kontemporer. Dibuat dengan material berkualitas tinggi dan finishing yang rapi.',
     src: '/images/gazebo1.jpeg'
   },
   { 
@@ -19,6 +20,7 @@ const galleryImages = [
     title: 'Gazebo Klasik', 
     category: 'Klasik',
     alt: 'Gazebo dengan sentuhan klasik yang elegan',
+    description: 'Gazebo klasik dengan ornamen kayu yang indah. Cocok untuk taman bergaya tradisional dengan sentuhan mewah.',
     src: '/images/gazebo1.jpeg'
   },
   { 
@@ -26,6 +28,7 @@ const galleryImages = [
     title: 'Gazebo Taman', 
     category: 'Taman',
     alt: 'Gazebo di tengah taman yang asri',
+    description: 'Gazebo taman yang nyaman dengan sirkulasi udara yang baik. Dilengkapi dengan tempat duduk yang luas untuk bersantai di taman.',
     src: '/images/gazebo1.jpeg'
   },
   { 
@@ -33,6 +36,7 @@ const galleryImages = [
     title: 'Gazebo Mewah', 
     category: 'Mewah',
     alt: 'Gazebo mewah dengan desain eksklusif',
+    description: 'Gazebo mewah dengan material pilihan dan desain eksklusif. Cocok untuk properti premium dengan sentuhan kemewahan.',
     src: '/images/gazebo1.jpeg'
   },
   { 
@@ -40,6 +44,7 @@ const galleryImages = [
     title: 'Gazebo Minimalis 2', 
     category: 'Minimalis',
     alt: 'Gazebo minimalis dengan atap datar',
+    description: 'Gazebo minimalis dengan atap datar yang modern. Desain simpel namun elegan untuk hunian masa kini.',
     src: '/images/gazebo1.jpeg'
   },
   { 
@@ -47,6 +52,7 @@ const galleryImages = [
     title: 'Gazebo Klasik 2', 
     category: 'Klasik',
     alt: 'Gazebo klasik dengan ukiran kayu',
+    description: 'Gazebo klasik dengan ukiran kayu yang detail. Menghadirkan nuansa tradisional yang hangat dan elegan.',
     src: '/images/gazebo1.jpeg'
   },
   { 
@@ -113,6 +119,7 @@ const GalleryPage = () => {
 
   // Buka lightbox
   const openLightbox = (index: number) => {
+    console.log('Opening lightbox with index:', index);
     setSelectedImage(index);
     setIsOpen(true);
     document.body.style.overflow = 'hidden';
@@ -131,11 +138,11 @@ const GalleryPage = () => {
     
     if (direction === 'prev') {
       setSelectedImage(prev => 
-        prev === 0 ? filteredImages.length - 1 : (prev || 1) - 1
+        prev === 0 ? filteredImages.length - 1 : (prev !== null ? prev - 1 : 0)
       );
     } else {
       setSelectedImage(prev => 
-        prev === filteredImages.length - 1 ? 0 : (prev || 0) + 1
+        prev === filteredImages.length - 1 ? 0 : (prev !== null ? prev + 1 : 0)
       );
     }
   };
@@ -242,7 +249,7 @@ const GalleryPage = () => {
               {filteredImages.map((image, index) => (
                 <motion.div 
                   key={image.id}
-                  className="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 hover:border-red-100 h-full flex flex-col"
+                  className="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 hover:border-red-100 h-full flex flex-col cursor-pointer"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
@@ -253,7 +260,7 @@ const GalleryPage = () => {
                     <img 
                       src={image.src} 
                       alt={image.alt} 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover pointer-events-none"
                       onError={(e) => {
                         // Fallback ke placeholder jika gambar gagal dimuat
                         const target = e.target as HTMLImageElement;
@@ -311,10 +318,10 @@ const GalleryPage = () => {
       </section>
 
       {/* Lightbox */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {isOpen && selectedImage !== null && (
           <motion.div 
-            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -322,73 +329,117 @@ const GalleryPage = () => {
           >
             <button 
               onClick={closeLightbox}
-              className="absolute top-6 right-6 text-white hover:text-red-400 transition-colors p-2 bg-black/50 rounded-full hover:bg-gray-800"
+              className="absolute top-6 right-6 text-white hover:text-red-400 transition-colors p-2 z-10"
               aria-label="Tutup"
             >
-              <FiX className="w-6 h-6" />
+              <FiX className="w-8 h-8" />
             </button>
 
+            {/* Navigation Buttons */}
             <button 
               onClick={(e) => {
                 e.stopPropagation();
                 navigateImage('prev');
               }}
-              className="absolute left-4 md:left-8 text-white hover:text-red-400 transition-colors p-3 bg-black/60 rounded-full hover:bg-gray-800/80"
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-red-400 transition-all p-4 bg-black/40 hover:bg-black/60 rounded-full backdrop-blur-sm z-10"
               aria-label="Gambar sebelumnya"
             >
-              <FiChevronLeft className="w-8 h-8" />
+              <FiChevronLeft className="w-6 h-6" />
             </button>
 
+            {/* Main Lightbox Content */}
             <motion.div 
-              className="relative max-w-4xl w-full max-h-[80vh] overflow-hidden"
-              initial={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-5xl h-[85vh] flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <svg className="w-16 h-16 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  <span className="block text-gray-400">Gambar {filteredImages[selectedImage]?.title}</span>
+              {/* Image Container - Full Height with Gray Background */}
+              <div className="flex-1 relative overflow-hidden bg-gray-200 flex items-center justify-center p-0">
+                {filteredImages[selectedImage] && (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <img 
+                      src={filteredImages[selectedImage].src} 
+                      alt={filteredImages[selectedImage].alt}
+                      className="w-full h-full object-contain max-h-full max-w-full"
+                      style={{
+                        backgroundColor: 'transparent',
+                        objectFit: 'contain',
+                        padding: '1.5rem',
+                        maxHeight: 'calc(85vh - 180px)', // Menyesuaikan tinggi maksimum dengan ukuran lightbox yang lebih kecil
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2E5YjUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOSAxMWE3IDcgMCAwIDEtMTQgMHM3IDcgNyA3IDctNyA3LTd6Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMCIgcj0iMyIvPjwvc3ZnPg==';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Info Panel */}
+              <div className="border-t border-gray-200 bg-white p-6">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="px-3 py-1 bg-red-100 text-red-600 text-sm font-medium rounded-full">
+                        {filteredImages[selectedImage]?.category}
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        {selectedImage !== null ? selectedImage + 1 : 0} / {filteredImages.length}
+                      </span>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      {filteredImages[selectedImage]?.title}
+                    </h3>
+                    <p className="text-gray-600">
+                      {filteredImages[selectedImage]?.description}
+                    </p>
+                  </div>
+                  
+                  {/* Navigation Dots */}
+                  <div className="flex gap-2 mt-4 md:mt-0">
+                    {filteredImages.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedImage(idx);
+                        }}
+                        className={`w-3 h-3 rounded-full transition-all ${
+                          idx === selectedImage ? 'bg-red-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'
+                        }`}
+                        aria-label={`Pergi ke gambar ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
-              {/* Pagination Dots */}
-              <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex gap-2">
-                {filteredImages.map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedImage(idx);
-                    }}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      idx === selectedImage ? 'bg-red-500' : 'bg-white/50 hover:bg-white/70'
-                    }`}
-                    aria-label={`Pergi ke gambar ${idx + 1}`}
-                  />
-                ))}
-              </div>
-              <div className="absolute bottom-4 left-0 right-0 text-center text-white bg-gradient-to-t from-black/80 to-transparent py-4">
-                <h3 className="text-xl font-semibold">{filteredImages[selectedImage]?.title}</h3>
-                <p className="text-red-300 font-medium">{filteredImages[selectedImage]?.category}</p>
               </div>
             </motion.div>
 
+            {/* Next Button */}
             <button 
               onClick={(e) => {
                 e.stopPropagation();
                 navigateImage('next');
               }}
-              className="absolute right-4 md:right-8 text-white hover:text-red-400 transition-colors p-3 bg-black/60 rounded-full hover:bg-gray-800/80"
+              className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-red-400 transition-all p-4 bg-black/40 hover:bg-black/60 rounded-full backdrop-blur-sm z-10"
               aria-label="Gambar berikutnya"
             >
-              <FiChevronRight className="w-8 h-8" />
+              <FiChevronRight className="w-6 h-6" />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Debug Info */}
+      <div className="fixed bottom-4 right-4 bg-black/80 text-white p-4 rounded-lg text-sm z-50 hidden">
+        <div>isOpen: {isOpen ? 'true' : 'false'}</div>
+        <div>selectedImage: {selectedImage}</div>
+        <div>Image src: {selectedImage !== null ? filteredImages[selectedImage]?.src : 'No image selected'}</div>
+      </div>
     </div>
   );
 };
