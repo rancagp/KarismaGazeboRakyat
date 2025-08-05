@@ -2,125 +2,173 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiZoomIn, FiX, FiChevronLeft, FiChevronRight, FiFilter } from 'react-icons/fi';
+import { FiZoomIn, FiX, FiChevronLeft, FiChevronRight, FiFilter, FiLoader } from 'react-icons/fi';
 import { FaSearch } from 'react-icons/fa';
 
-// Data gambar galeri
-const galleryImages = [
-  { 
-    id: 1, 
-    title: 'Gazebo Minimalis', 
-    category: 'Minimalis',
-    alt: 'Gazebo Minimalis dengan desain modern',
-    description: 'Gazebo minimalis dengan desain modern yang cocok untuk hunian kontemporer. Dibuat dengan material berkualitas tinggi dan finishing yang rapi.',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 2, 
-    title: 'Gazebo Klasik', 
-    category: 'Klasik',
-    alt: 'Gazebo dengan sentuhan klasik yang elegan',
-    description: 'Gazebo klasik dengan ornamen kayu yang indah. Cocok untuk taman bergaya tradisional dengan sentuhan mewah.',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 3, 
-    title: 'Gazebo Taman', 
-    category: 'Taman',
-    alt: 'Gazebo di tengah taman yang asri',
-    description: 'Gazebo taman yang nyaman dengan sirkulasi udara yang baik. Dilengkapi dengan tempat duduk yang luas untuk bersantai di taman.',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 4, 
-    title: 'Gazebo Mewah', 
-    category: 'Mewah',
-    alt: 'Gazebo mewah dengan desain eksklusif',
-    description: 'Gazebo mewah dengan material pilihan dan desain eksklusif. Cocok untuk properti premium dengan sentuhan kemewahan.',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 5, 
-    title: 'Gazebo Minimalis 2', 
-    category: 'Minimalis',
-    alt: 'Gazebo minimalis dengan atap datar',
-    description: 'Gazebo minimalis dengan atap datar yang modern. Desain simpel namun elegan untuk hunian masa kini.',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 6, 
-    title: 'Gazebo Klasik 2', 
-    category: 'Klasik',
-    alt: 'Gazebo klasik dengan ukiran kayu',
-    description: 'Gazebo klasik dengan ukiran kayu yang detail. Menghadirkan nuansa tradisional yang hangat dan elegan.',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 7, 
-    title: 'Gazebo Taman 2', 
-    category: 'Taman',
-    alt: 'Gazebo di taman bunga',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 8, 
-    title: 'Gazebo Mewah 2', 
-    category: 'Mewah',
-    alt: 'Gazebo mewah dengan kolam renang',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 9, 
-    title: 'Gazebo Minimalis 3', 
-    category: 'Minimalis',
-    alt: 'Gazebo minimalis dengan aksen kayu',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 10, 
-    title: 'Gazebo Klasik 3', 
-    category: 'Klasik',
-    alt: 'Gazebo klasik dengan ornamen tradisional',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 11, 
-    title: 'Gazebo Taman 3', 
-    category: 'Taman',
-    alt: 'Gazebo di taman belakang rumah',
-    src: '/images/gazebo1.jpeg'
-  },
-  { 
-    id: 12, 
-    title: 'Gazebo Mewah 3', 
-    category: 'Mewah',
-    alt: 'Gazebo mewah dengan pemandangan danau',
-    src: '/images/gazebo1.jpeg'
-  },
-];
+// Tipe data untuk gambar galeri
+interface GalleryImage {
+  id: number;
+  title: string;
+  category: string;
+  alt?: string;
+  description: string;
+  image: string;
+  slug: string;
+  created_at: string;
+  updated_at: string;
+}
 
-// Kategori unik untuk filter
-const categories = ['Semua', ...new Set(galleryImages.map(image => image.category))];
+// Komponen untuk menampilkan loading
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center py-12">
+    <FiLoader className="animate-spin text-4xl text-primary" />
+    <span className="ml-2">Memuat galeri...</span>
+  </div>
+);
+
+// Komponen untuk menampilkan pesan error
+const ErrorMessage = ({ message }: { message: string }) => (
+  <div className="text-center py-12 text-red-500">
+    <p>Terjadi kesalahan: {message}</p>
+    <button 
+      onClick={() => window.location.reload()}
+      className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-dark transition-colors"
+    >
+      Coba Lagi
+    </button>
+  </div>
+);
+
+// Komponen untuk menampilkan galeri kosong
+const EmptyGallery = () => (
+  <div className="text-center py-12">
+    <p className="text-gray-500">Belum ada gambar di galeri.</p>
+  </div>
+);
+
+// Fungsi untuk mengambil data galeri dari API
+async function getGalleryImages() {
+  const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL + '/galeri';
+  
+  try {
+    const res = await fetch(API_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Gagal mengambil data galeri');
+    
+    const data = await res.json();
+    
+    return data.map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      description: item.description || '',
+      image: processImageUrl(item.image || item.gambar || ''),
+      alt: item.title,
+      created_at: item.created_at,
+      updated_at: item.updated_at
+    }));
+  } catch (error) {
+    console.error('Error:', error);
+    return [];
+  }
+}
+
+// Fungsi untuk memproses URL gambar
+function processImageUrl(path: string): string {
+  if (!path) return '/images/placeholder.jpg';
+  
+  // Hapus awalan yang tidak diperlukan
+  const cleanPath = path.replace(/^\/|^storage\//, '');
+  const fileName = cleanPath.split('/').pop();
+  
+  // Dapatkan base URL tanpa /api
+  let baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://kgr-backend.test';
+  baseUrl = baseUrl.replace(/\/api\/?$/, '');
+  baseUrl = baseUrl.replace(/\/$/, '');
+  
+  // Kembalikan URL lengkap
+  return `${baseUrl}/img/galeri/${fileName}`;
+}
+
 
 const GalleryPage = () => {
-  const [selectedCategory, setSelectedCategory] = useState('Semua');
-  const [searchQuery, setSearchQuery] = useState('');
+  // State untuk data galeri
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [filteredImages, setFilteredImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // State untuk lightbox
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  
+  // State untuk filter dan pencarian
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // Handler untuk pencarian
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Handler untuk filter kategori
+  const handleCategoryFilter = (category: string | null) => {
+    setSelectedCategory(category);
+  };
+
+  // Ambil data galeri dari API
+  useEffect(() => {
+    const fetchGallery = async () => {
+      try {
+        setLoading(true);
+        const data = await getGalleryImages();
+        
+        setGalleryImages(data);
+        setFilteredImages(data);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching gallery:', err);
+        setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memuat galeri');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchGallery();
+  }, []);
 
   // Filter gambar berdasarkan kategori dan pencarian
-  const filteredImages = galleryImages.filter(image => {
-    const matchesCategory = selectedCategory === 'Semua' || image.category === selectedCategory;
-    const matchesSearch = image.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         image.category.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  useEffect(() => {
+    if (!galleryImages.length) return;
+    
+    let result = [...galleryImages];
+    
+    // Filter berdasarkan kategori
+    if (selectedCategory) {
+      result = result.filter(img => img.category === selectedCategory);
+    }
+    
+    // Filter berdasarkan pencarian
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(
+        img => 
+          img.title.toLowerCase().includes(term) || 
+          (img.description && img.description.toLowerCase().includes(term)) ||
+          (img.category && img.category.toLowerCase().includes(term))
+      );
+    }
+    
+    setFilteredImages(result);
+  }, [selectedCategory, searchTerm, galleryImages]);
+  
+  // Dapatkan daftar kategori unik
+  const categories = Array.from(new Set(
+    galleryImages.map(img => img.category).filter(Boolean)
+  ));
 
   // Buka lightbox
   const openLightbox = (index: number) => {
-    console.log('Opening lightbox with index:', index);
-    setSelectedImage(index);
+    setCurrentImageIndex(index);
     setIsOpen(true);
     document.body.style.overflow = 'hidden';
   };
@@ -128,50 +176,50 @@ const GalleryPage = () => {
   // Tutup lightbox
   const closeLightbox = () => {
     setIsOpen(false);
-    setSelectedImage(null);
     document.body.style.overflow = 'auto';
   };
 
   // Navigasi gambar di lightbox
   const navigateImage = (direction: 'prev' | 'next') => {
-    if (selectedImage === null) return;
-    
-    if (direction === 'prev') {
-      setSelectedImage(prev => 
-        prev === 0 ? filteredImages.length - 1 : (prev !== null ? prev - 1 : 0)
-      );
-    } else {
-      setSelectedImage(prev => 
-        prev === filteredImages.length - 1 ? 0 : (prev !== null ? prev + 1 : 0)
-      );
-    }
+    setCurrentImageIndex(prev => {
+      if (direction === 'prev') {
+        return prev === 0 ? filteredImages.length - 1 : prev - 1;
+      } else {
+        return prev === filteredImages.length - 1 ? 0 : prev + 1;
+      }
+    });
   };
 
-  // Tangani klik di backdrop lightbox
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  // Handler untuk klik backdrop lightbox
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       closeLightbox();
     }
   };
+  
+  // Handler untuk keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      
+      switch (e.key) {
+        case 'Escape':
+          closeLightbox();
+          break;
+        case 'ArrowLeft':
+          navigateImage('prev');
+          break;
+        case 'ArrowRight':
+          navigateImage('next');
+          break;
+        default:
+          break;
+      }
+    };
 
-  // Tangani keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      closeLightbox();
-    } else if (e.key === 'ArrowLeft') {
-      navigateImage('prev');
-    } else if (e.key === 'ArrowRight') {
-      navigateImage('next');
-    }
-  };
-
-  // Efek untuk menangani event keyboard
-  React.useEffect(() => {
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown as any);
-      return () => window.removeEventListener('keydown', handleKeyDown as any);
-    }
-  }, [isOpen, selectedImage]);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, currentImageIndex, filteredImages.length]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -196,15 +244,15 @@ const GalleryPage = () => {
                 type="text"
                 placeholder="Cari galeri..."
                 className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-300"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchTerm}
+                onChange={handleSearch}
               />
               <FaSearch className="absolute left-3 top-3.5 text-gray-400" />
             </div>
             
             <div className="w-full md:w-auto">
               <button 
-                onClick={() => setShowFilters(!showFilters)}
+                onClick={() => handleCategoryFilter(null)}
                 className="flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-5 py-3 text-gray-700 hover:bg-gray-50 hover:border-red-400 transition-all duration-300 w-full justify-center md:w-auto"
               >
                 <FiFilter className="text-red-500" />
@@ -215,11 +263,11 @@ const GalleryPage = () => {
 
           {/* Category Filter */}
           <motion.div 
-            className={`mb-12 overflow-hidden ${showFilters ? 'block' : 'hidden'}`}
+            className={`mb-12 overflow-hidden`}
             initial={{ height: 0, opacity: 0 }}
             animate={{ 
-              height: showFilters ? 'auto' : 0, 
-              opacity: showFilters ? 1 : 0 
+              height: 'auto', 
+              opacity: 1 
             }}
             transition={{ duration: 0.3 }}
           >
@@ -227,10 +275,7 @@ const GalleryPage = () => {
               {categories.map((category) => (
                 <button
                   key={category}
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    setShowFilters(false);
-                  }}
+                  onClick={() => handleCategoryFilter(category)}
                   className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
                     selectedCategory === category
                       ? 'bg-red-600 text-white shadow-md shadow-red-100'
@@ -243,53 +288,31 @@ const GalleryPage = () => {
             </div>
           </motion.div>
 
-          {/* Gallery Grid */}
+          {/* Daftar Galeri */}
           {filteredImages.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredImages.map((image, index) => (
-                <motion.div 
+                <motion.div
                   key={image.id}
-                  className="group relative rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 bg-white border border-gray-100 hover:border-red-100 h-full flex flex-col cursor-pointer"
+                  className="group relative overflow-hidden rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow duration-300 cursor-pointer"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
                   onClick={() => openLightbox(index)}
                 >
-                  <div className="relative h-64 md:h-80 w-full bg-gray-50">
-                    {/* Gambar utama */}
-                    <img 
-                      src={image.src} 
-                      alt={image.alt} 
-                      className="w-full h-full object-cover pointer-events-none"
-                      onError={(e) => {
-                        // Fallback ke placeholder jika gambar gagal dimuat
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2E5YjUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJ9PC9zdmc+';
-                      }}
+                  <div className="aspect-w-16 aspect-h-9 w-full overflow-hidden">
+                    <img
+                      src={image.image}
+                      alt={image.alt || image.title}
+                      className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    
-                    {/* Overlay untuk hover */}
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="text-center p-4">
-                        <FiZoomIn className="w-12 h-12 mx-auto mb-2" />
-                        <span className="text-sm text-white bg-black/50 px-2 py-1 rounded">Lihat Detail</span>
-                      </div>
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5">
-                      <div className="flex justify-end">
-                        <span className="inline-block bg-red-600 text-white text-xs font-medium px-3 py-1 rounded-full">
-                          {image.category}
-                        </span>
-                      </div>
-                      <div>
-                        <h3 className="text-white font-bold text-xl mb-1">{image.title}</h3>
-                      </div>
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
+                      <FiZoomIn className="text-white text-3xl opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300" />
                     </div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="bg-black/50 rounded-full p-3 text-white transform translate-y-3 group-hover:translate-y-0 transition-all duration-300 hover:bg-red-600 hover:scale-110">
-                      <FiZoomIn className="w-5 h-5" />
-                    </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{image.title}</h3>
+                    <p className="text-sm text-gray-500">{image.category}</p>
                   </div>
                 </motion.div>
               ))}
@@ -305,8 +328,8 @@ const GalleryPage = () => {
               <p className="text-gray-500 max-w-md mx-auto">Tidak ada gambar yang cocok dengan pencarian Anda.</p>
               <button 
                 onClick={() => {
-                  setSearchQuery('');
-                  setSelectedCategory('Semua');
+                  setSearchTerm('');
+                  setSelectedCategory(null);
                 }}
                 className="mt-6 px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-red-400 transition-colors duration-300 font-medium"
               >
@@ -318,18 +341,19 @@ const GalleryPage = () => {
       </section>
 
       {/* Lightbox */}
-      <AnimatePresence mode="wait">
-        {isOpen && selectedImage !== null && (
-          <motion.div 
+      <AnimatePresence>
+        {isOpen && filteredImages.length > 0 && filteredImages[currentImageIndex] && (
+          <motion.div
             className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={handleBackdropClick}
           >
-            <button 
-              onClick={closeLightbox}
+            {/* Close Button */}
+            <button
               className="absolute top-6 right-6 text-white hover:text-red-400 transition-colors p-2 z-10"
+              onClick={closeLightbox}
               aria-label="Tutup"
             >
               <FiX className="w-8 h-8" />
@@ -356,27 +380,23 @@ const GalleryPage = () => {
               transition={{ duration: 0.2, ease: 'easeOut' }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Image Container - Full Height with Gray Background */}
-              <div className="flex-1 relative overflow-hidden bg-gray-200 flex items-center justify-center p-0">
-                {filteredImages[selectedImage] && (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <img 
-                      src={filteredImages[selectedImage].src} 
-                      alt={filteredImages[selectedImage].alt}
-                      className="w-full h-full object-contain max-h-full max-w-full"
-                      style={{
-                        backgroundColor: 'transparent',
-                        objectFit: 'contain',
-                        padding: '1.5rem',
-                        maxHeight: 'calc(85vh - 180px)', // Menyesuaikan tinggi maksimum dengan ukuran lightbox yang lebih kecil
-                      }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2E5YjUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOSAxMWE3IDcgMCAwIDEtMTQgMHM3IDcgNyA3IDctNyA3LTd6Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMCIgcj0iMyIvPjwvc3ZnPg==';
-                      }}
-                    />
-                  </div>
-                )}
+              {/* Image Container */}
+              <div className="flex-1 relative overflow-hidden bg-gray-100 flex items-center justify-center p-8">
+                <img 
+                  src={filteredImages[currentImageIndex].image}
+                  alt={filteredImages[currentImageIndex].alt || filteredImages[currentImageIndex].title}
+                  className="w-full h-full object-contain max-h-full max-w-full"
+                  style={{
+                    backgroundColor: 'transparent',
+                    objectFit: 'contain',
+                    padding: '1.5rem',
+                    maxHeight: 'calc(85vh - 180px)'
+                  }}
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM5Y2E5YjUiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwYXRoIGQ9Ik0xOSAxMWE3IDcgMCAwIDEtMTQgMHM3IDcgNyA3IDctNyA3LTd6Ii8+PGNpcmNsZSBjeD0iMTIiIGN5PSIxMCIgcj0iMyIvPjwvc3ZnPg==';
+                  }}
+                />
               </div>
 
               {/* Info Panel */}
@@ -385,17 +405,17 @@ const GalleryPage = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="px-3 py-1 bg-red-100 text-red-600 text-sm font-medium rounded-full">
-                        {filteredImages[selectedImage]?.category}
+                        {filteredImages[currentImageIndex]?.category}
                       </span>
                       <span className="text-gray-500 text-sm">
-                        {selectedImage !== null ? selectedImage + 1 : 0} / {filteredImages.length}
+                        {currentImageIndex + 1} / {filteredImages.length}
                       </span>
                     </div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                      {filteredImages[selectedImage]?.title}
+                      {filteredImages[currentImageIndex]?.title}
                     </h3>
                     <p className="text-gray-600">
-                      {filteredImages[selectedImage]?.description}
+                      {filteredImages[currentImageIndex]?.description}
                     </p>
                   </div>
                   
@@ -406,10 +426,10 @@ const GalleryPage = () => {
                         key={idx}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setSelectedImage(idx);
+                          setCurrentImageIndex(idx);
                         }}
                         className={`w-3 h-3 rounded-full transition-all ${
-                          idx === selectedImage ? 'bg-red-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'
+                          idx === currentImageIndex ? 'bg-red-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'
                         }`}
                         aria-label={`Pergi ke gambar ${idx + 1}`}
                       />
@@ -433,13 +453,6 @@ const GalleryPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      {/* Debug Info */}
-      <div className="fixed bottom-4 right-4 bg-black/80 text-white p-4 rounded-lg text-sm z-50 hidden">
-        <div>isOpen: {isOpen ? 'true' : 'false'}</div>
-        <div>selectedImage: {selectedImage}</div>
-        <div>Image src: {selectedImage !== null ? filteredImages[selectedImage]?.src : 'No image selected'}</div>
-      </div>
     </div>
   );
 };
