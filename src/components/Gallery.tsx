@@ -253,6 +253,12 @@ const Gallery = () => {
                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                     <h3 className="text-white font-semibold line-clamp-1">{item.title}</h3>
                     <span className="text-red-400 text-sm">{item.category}</span>
+                    {item.description && (
+                      <div 
+                        className="text-white text-xs mt-1 line-clamp-2"
+                        dangerouslySetInnerHTML={{ __html: item.description }}
+                      />
+                    )}
                   </div>
                 </div>
               </div>
@@ -346,7 +352,12 @@ const Gallery = () => {
                   />
                   <div className="mt-4 text-center text-white">
                     <h3 className="text-xl font-bold">{filteredImages[selectedImage].title}</h3>
-                    <p className="text-gray-300 mt-2">{filteredImages[selectedImage].description}</p>
+                    {filteredImages[selectedImage].description && (
+                      <div 
+                        className="text-gray-300 mt-2 max-w-2xl mx-auto prose prose-invert prose-sm"
+                        dangerouslySetInnerHTML={{ __html: filteredImages[selectedImage].description }}
+                      />
+                    )}
                   </div>
                 </motion.div>
               </div>

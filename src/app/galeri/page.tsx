@@ -427,9 +427,10 @@ const GalleryPage = () => {
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">
                       {filteredImages[currentImageIndex]?.title}
                     </h3>
-                    <p className="text-gray-600">
-                      {filteredImages[currentImageIndex]?.description}
-                    </p>
+                    <div 
+                      className="text-gray-600 prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: filteredImages[currentImageIndex]?.description || '' }}
+                    />
                   </div>
                   
                   {/* Navigation Dots */}

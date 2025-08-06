@@ -178,9 +178,10 @@ const FeaturedProducts = () => {
                 {product.specs && (
                   <div className="mb-6">
                     <div className="text-sm font-medium text-gray-700 mb-2">Spesifikasi:</div>
-                    <div className="text-sm text-gray-600 line-clamp-3">
-                      {product.specs}
-                    </div>
+                    <div 
+                      className="text-sm text-gray-600 line-clamp-3"
+                      dangerouslySetInnerHTML={{ __html: product.specs }}
+                    />
                   </div>
                 )}
                 <Link 

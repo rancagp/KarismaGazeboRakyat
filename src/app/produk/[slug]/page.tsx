@@ -110,13 +110,7 @@ export default async function ProductDetailPage({
           {/* Detail Produk */}
           <div className="md:w-1/2">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
-            
-            <div className="mb-6">
-              <span className="text-2xl font-semibold text-indigo-600">
-                Rp {product.price?.toLocaleString('id-ID')}
-              </span>
-            </div>
-
+    
             <div className="mb-8">
               <h2 className="text-lg font-semibold mb-2">Deskripsi Produk</h2>
               <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
