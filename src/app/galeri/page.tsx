@@ -378,7 +378,7 @@ const GalleryPage = () => {
                 e.stopPropagation();
                 navigateImage('prev');
               }}
-              className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-red-400 transition-all p-4 bg-black/40 hover:bg-black/60 rounded-full backdrop-blur-sm z-10"
+              className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-black transition-all p-4 bg-black/40 hover:bg-black/60 rounded-full backdrop-blur-sm z-10"
               aria-label="Gambar sebelumnya"
             >
               <FiChevronLeft className="w-6 h-6" />

@@ -90,56 +90,149 @@ export default async function ProductDetailPage({
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Gambar Produk */}
-          <div className="md:w-1/2">
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-              <Image
-                src={product.image || '/images/placeholder-product.jpg'}
-                alt={product.name}
-                width={800}
-                height={600}
-                className="w-full h-auto object-cover"
-                priority
-              />
-            </div>
-          </div>
+    <main className="pt-20 md:pt-24 pb-16 min-h-screen bg-gray-50">
+      {/* Breadcrumb */}
+      <div className="bg-white shadow-sm">
+        <div className="container mx-auto px-4 py-3">
+          <nav className="flex" aria-label="Breadcrumb">
+            <ol className="inline-flex items-center space-x-1 md:space-x-3">
+              <li className="inline-flex items-center">
+                <Link href="/" className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors">
+                  Beranda
+                </Link>
+              </li>
+              <li>
+                <div className="flex items-center">
+                  <svg className="w-3 h-3 text-gray-400 mx-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
+                  </svg>
+                  <Link href="/produk" className="text-sm font-medium text-gray-700 hover:text-red-600 transition-colors">
+                    Produk
+                  </Link>
+                </div>
+              </li>
+              <li aria-current="page">
+                <div className="flex items-center">
+                  <svg className="w-3 h-3 text-gray-400 mx-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
+                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 9 4-4-4-4"/>
+                  </svg>
+                  <span className="text-sm font-medium text-gray-500">{product.name}</span>
+                </div>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
 
-          {/* Detail Produk */}
-          <div className="md:w-1/2">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{product.name}</h1>
-    
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold mb-2">Deskripsi Produk</h2>
-              <p className="text-gray-700 whitespace-pre-line">{product.description}</p>
-            </div>
-
-            {product.specs && (
-              <div className="mb-8">
-                <h2 className="text-lg font-semibold mb-2">Spesifikasi</h2>
-                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: product.specs }} />
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 md:p-8">
+            {/* Gallery Side */}
+            <div className="space-y-4">
+              <div className="relative aspect-square w-full bg-gray-100 rounded-lg overflow-hidden">
+                <Image
+                  src={product.image || '/images/placeholder-product.jpg'}
+                  alt={product.name}
+                  fill
+                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                  priority
+                />
               </div>
-            )}
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((item) => (
+                  <div key={item} className="aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer hover:ring-2 hover:ring-red-500 transition-all">
+                    <Image
+                      src={product.image || '/images/placeholder-product.jpg'}
+                      alt={`${product.name} - ${item}`}
+                      width={200}
+                      height={200}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
 
-            <div className="mt-8">
-              <Link 
-                href="/hubungi-kami" 
-                className="bg-indigo-600 text-white px-6 py-3 rounded-md hover:bg-indigo-700 transition-colors inline-block"
-              >
-                Hubungi Kami untuk Pemesanan
-              </Link>
-              <Link 
-                href="/produk" 
-                className="ml-4 text-indigo-600 hover:text-indigo-800 transition-colors inline-block"
-              >
-                ← Kembali ke Daftar Produk
-              </Link>
+            {/* Product Info Side */}
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                <div className="h-1 w-20 bg-red-600 rounded-full mb-4"></div>
+              </div>
+
+              {product.description && (
+                <div className="prose max-w-none text-gray-600">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Deskripsi Produk</h3>
+                  <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.description }} />
+                </div>
+              )}
+
+              {product.specs && (
+                <div className="border-t border-gray-200 pt-6">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Spesifikasi Teknis</h3>
+                  <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: product.specs }} />
+                </div>
+              )}
+
+              <div className="pt-6 flex flex-col sm:flex-row gap-4">
+                <Link 
+                  href="/hubungi-kami" 
+                  className="bg-red-600 hover:bg-red-700 text-white font-medium px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-center"
+                >
+                  Konsultasi Sekarang
+                </Link>
+                <Link 
+                  href="/produk" 
+                  className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium px-6 py-3 rounded-lg shadow-sm hover:shadow transition-all duration-300 text-center"
+                >
+                  Lihat Produk Lainnya
+                </Link>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg mt-6">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  <p className="text-sm text-blue-700">
+                    Butuh bantuan memilih produk yang tepat? Tim kami siap membantu Anda menemukan solusi terbaik untuk kebutuhan Anda.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Related Products */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Produk Lainnya</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Placeholder for related products */}
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <div className="relative h-48 bg-gray-100">
+                  <Image
+                    src={product.image || '/images/placeholder-product.jpg'}
+                    alt={`Produk terkait ${item}`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="p-4">
+                  <h3 className="font-medium text-gray-900 mb-1">Gazebo Minimalis {item}</h3>
+                  <p className="text-sm text-gray-500 mb-3">Ukuran 3x3 meter</p>
+                  <Link 
+                    href="/produk/gazebo-minimalis-1" 
+                    className="text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+                  >
+                    Lihat Detail →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </main>
   );
 }

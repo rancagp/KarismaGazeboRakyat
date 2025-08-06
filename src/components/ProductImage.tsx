@@ -39,7 +39,15 @@ export default function ProductImage({
       src={imgSrc}
       alt={alt}
       onError={handleError}
+      width={500} // Default width
+      height={500} // Default height
       unoptimized={process.env.NODE_ENV !== 'production'}
+      style={{
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        ...props.style
+      }}
       {...props}
     />
   );

@@ -205,7 +205,7 @@ const FeaturedProducts = () => {
         >
           <Link 
             href="/produk"
-            className="inline-flex items-center px-8 py-3 border-2 border-wood-600 text-base font-medium rounded-md text-wood-700 hover:bg-wood-50 md:py-4 md:text-lg md:px-10 transition-colors duration-300"
+            className="inline-flex items-center px-8 py-3 border-2 border-red-600 text-base font-medium rounded-md text-red-600 hover:bg-red-50 md:py-4 md:text-lg md:px-10 transition-colors duration-300"
           >
             Lihat Semua Produk
             <svg className="ml-2 -mr-1 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

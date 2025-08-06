@@ -274,13 +274,6 @@ const Gallery = () => {
                 >
                   <FiZoomIn className="w-5 h-5" />
                 </button>
-                <Link 
-                  href={`/galeri/${item.slug || item.id}`}
-                  className="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-sm font-medium transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  Lihat Detail
-                </Link>
               </div>
             </motion.div>
           ))}
@@ -308,69 +301,114 @@ const Gallery = () => {
         {/* Lightbox */}
         <AnimatePresence>
           {isOpen && selectedImage !== null && (
-            <motion.div 
-              className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
-              onClick={handleBackdropClick}
+            <motion.div
+              className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              onClick={handleBackdropClick}
             >
-              <button 
+              {/* Close Button */}
+              <button
+                className="absolute top-6 right-6 text-white hover:text-red-400 transition-colors p-2 z-10"
                 onClick={closeLightbox}
-                className="absolute top-4 right-4 text-white hover:text-red-500 transition-colors z-10"
-                aria-label="Tutup lightbox"
+                aria-label="Tutup"
               >
                 <FiX className="w-8 h-8" />
               </button>
-              
+
+              {/* Navigation Buttons */}
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage('prev');
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:text-red-500 transition-colors p-2 z-10 bg-black/50 rounded-full"
+                className="absolute left-6 top-1/2 -translate-y-1/2 text-white hover:text-red-400 transition-all p-4 bg-black/40 hover:bg-black/60 rounded-full backdrop-blur-sm z-10"
                 aria-label="Gambar sebelumnya"
               >
-                <FiChevronLeft className="w-8 h-8" />
+                <FiChevronLeft className="w-6 h-6" />
               </button>
-              
-              <div className="relative max-w-4xl w-full max-h-[90vh]">
-                <motion.div
-                  key={selectedImage}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.2 }}
-                  className="relative w-full h-full"
-                >
+
+              {/* Main Lightbox Content */}
+              <motion.div 
+                className="relative w-full max-w-5xl h-[85vh] flex flex-col bg-white rounded-xl shadow-2xl overflow-hidden"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Image Container */}
+                <div className="flex-1 relative overflow-hidden bg-gray-100 flex items-center justify-center p-8">
                   <Image
                     src={filteredImages[selectedImage].image}
                     alt={filteredImages[selectedImage].alt || filteredImages[selectedImage].title}
-                    width={1200}
-                    height={800}
-                    className="max-w-full max-h-[80vh] w-auto h-auto mx-auto object-contain"
+                    fill
+                    className="object-contain"
+                    style={{
+                      maxHeight: 'calc(85vh - 180px)',
+                      padding: '1.5rem'
+                    }}
+                    priority
+                    sizes="(max-width: 1200px) 100vw, 80vw"
                   />
-                  <div className="mt-4 text-center text-white">
-                    <h3 className="text-xl font-bold">{filteredImages[selectedImage].title}</h3>
-                    {filteredImages[selectedImage].description && (
-                      <div 
-                        className="text-gray-300 mt-2 max-w-2xl mx-auto prose prose-invert prose-sm"
-                        dangerouslySetInnerHTML={{ __html: filteredImages[selectedImage].description }}
-                      />
-                    )}
+                </div>
+
+                {/* Info Panel */}
+                <div className="border-t border-gray-200 bg-white p-6">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        {filteredImages[selectedImage].category && (
+                          <span className="px-3 py-1 bg-red-100 text-red-600 text-sm font-medium rounded-full">
+                            {filteredImages[selectedImage].category}
+                          </span>
+                        )}
+                        <span className="text-gray-500 text-sm">
+                          {selectedImage + 1} / {filteredImages.length}
+                        </span>
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                        {filteredImages[selectedImage].title}
+                      </h3>
+                      {filteredImages[selectedImage].description && (
+                        <div 
+                          className="text-gray-600 prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: filteredImages[selectedImage].description }}
+                        />
+                      )}
+                    </div>
+                    
+                    {/* Navigation Dots */}
+                    <div className="flex gap-2 mt-4 md:mt-0">
+                      {filteredImages.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedImage(idx);
+                          }}
+                          className={`w-3 h-3 rounded-full transition-all ${
+                            idx === selectedImage ? 'bg-red-500 scale-125' : 'bg-gray-300 hover:bg-gray-400'
+                          }`}
+                          aria-label={`Pergi ke gambar ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </motion.div>
-              </div>
-              
+                </div>
+              </motion.div>
+
+              {/* Next Button */}
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
                   navigateImage('next');
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:text-red-500 transition-colors p-2 z-10 bg-black/50 rounded-full"
+                className="absolute right-6 top-1/2 -translate-y-1/2 text-white hover:text-red-400 transition-all p-4 bg-black/40 hover:bg-black/60 rounded-full backdrop-blur-sm z-10"
                 aria-label="Gambar berikutnya"
               >
-                <FiChevronRight className="w-8 h-8" />
+                <FiChevronRight className="w-6 h-6" />
               </button>
             </motion.div>
           )}
